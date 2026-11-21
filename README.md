@@ -20,7 +20,7 @@
 [![Explainable](https://img.shields.io/badge/Evidence-Grad--CAM-0a0f1a?style=flat-square&labelColor=263049&color=f4694b)](#-how-the-detector-works)
 [![Docker](https://img.shields.io/badge/Docker-ready-0a0f1a?style=flat-square&labelColor=263049&logo=docker&logoColor=white&color=2496ED)](#-deployment)
 
-**Built by [@YOUR_GITHUB_USERNAME](https://github.com/shubhmohan)**
+**Built by [Shubh Mohan](https://github.com/shubhmohan)**
 
 </div>
 
@@ -432,7 +432,7 @@ non-commercial, so is any deployment that uses them.
 
 <div align="center">
 
-**Built by [@shubhmohan](https://github.com/shubhmohan)**
+**Built by [Shubh Mohan](https://github.com/shubhmohan)**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shubhmohan)
 
