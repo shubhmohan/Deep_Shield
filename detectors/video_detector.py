@@ -27,9 +27,10 @@ class VideoDetector:
     ImageDetector per frame, that would reload both models every time.
     """
 
-    def __init__(self, max_frames: int = 20):
+    def __init__(self, max_frames: int = 20, image_detector=None):
         print("[VideoDetector] Initializing (reuses ImageDetector's already-loaded models)...")
-        self.image_detector = ImageDetector()
+        # Pass in an existing ImageDetector to share its loaded model instead of loading a second copy.
+        self.image_detector = image_detector or ImageDetector()
         self.blink_analyzer = BlinkAnalyzer()
         self.video_preprocessor = VideoPreprocessor(max_frames=max_frames)
         print("[VideoDetector] Ready.")

@@ -1,0 +1,42 @@
+# --- Model weights (too big for GitHub: the DF40 CLIP file is ~1.2 GB, limit is 100 MB per file) ---
+checkpoints/*
+!checkpoints/README.md
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+
+# --- Datasets / test media ---
+sample_data/
+data/
+*.zip
+*.mp4
+*.mov
+*.avi
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Secrets ---
+.env
+.env.local
+# (.env.example and .env.production are safe to commit)
+
+# --- Node / frontend ---
+node_modules/
+deepshield-frontend/dist/
+npm-debug.log*
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

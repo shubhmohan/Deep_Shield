@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 280" width="1280" height="280" role="img" aria-label="DeepShield pipeline: upload, face crop, CLIP detector, verdict, Grad-CAM evidence">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a0f1a"/><stop offset="1" stop-color="#141d33"/></linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#45d3b8"/></marker>
+    <clipPath id="frame"><rect width="1280" height="280" rx="20"/></clipPath>
+  </defs>
+  <style>
+    .t { font-family: 'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-weight: 600; font-size: 22px; fill: #e9edf3; }
+    .s { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; fill: #8b95a7; }
+    .n { font-family: 'IBM Plex Mono', 'Courier New', monospace; font-size: 14px; fill: #45d3b8; letter-spacing: 2px; }
+    .box  { fill: #11182a; stroke: #263049; stroke-width: 1.5; }
+    .glow { fill: none; stroke: #45d3b8; stroke-width: 2.5; opacity: 0; animation: glow 7.5s ease-in-out infinite; }
+    .flow { stroke: #45d3b8; stroke-width: 2; stroke-dasharray: 6 7; fill: none; animation: dash 1s linear infinite; opacity: .75; }
+    .dot  { fill: #f2c14e; opacity: 0; animation: travel 7.5s linear infinite; }
+    @keyframes dash   { to { stroke-dashoffset: -13; } }
+    @keyframes glow   { 0% { opacity: 0; } 4% { opacity: 1; } 18% { opacity: 1; } 24%, 100% { opacity: 0; } }
+    @keyframes travel { 0% { opacity: 0; transform: translateX(0); } 2% { opacity: 1; } 12% { opacity: 1; transform: translateX(62px); } 14%, 100% { opacity: 0; transform: translateX(62px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } .glow { opacity: 1; } }
+  </style>
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="280" fill="url(#bg)"/>
+
+    <!-- connectors (gap between 200px-wide boxes = 62px) -->
+    <g>
+      <line class="flow" x1="228" y1="140" x2="286" y2="140" marker-end="url(#arrow)"/>
+      <line class="flow" x1="490" y1="140" x2="548" y2="140" marker-end="url(#arrow)"/>
+      <line class="flow" x1="752" y1="140" x2="810" y2="140" marker-end="url(#arrow)"/>
+      <line class="flow" x1="1014" y1="140" x2="1072" y2="140" marker-end="url(#arrow)"/>
+    </g>
+    <g>
+      <circle class="dot" cx="224" cy="140" r="5" style="animation-delay:1.5s"/>
+      <circle class="dot" cx="486" cy="140" r="5" style="animation-delay:3.0s"/>
+      <circle class="dot" cx="748" cy="140" r="5" style="animation-delay:4.5s"/>
+      <circle class="dot" cx="1010" cy="140" r="5" style="animation-delay:6.0s"/>
+    </g>
+
+    <!-- nodes -->
+    <g>
+      <rect class="box" x="28" y="84" width="200" height="112" rx="14"/><rect class="glow" x="28" y="84" width="200" height="112" rx="14" style="animation-delay:0s"/>
+      <text class="n" x="48" y="114">01</text><text class="t" x="48" y="146">Upload</text><text class="s" x="48" y="170">image or video</text>
+    </g>
+    <g>
+      <rect class="box" x="290" y="84" width="200" height="112" rx="14"/><rect class="glow" x="290" y="84" width="200" height="112" rx="14" style="animation-delay:1.5s"/>
+      <text class="n" x="310" y="114">02</text><text class="t" x="310" y="146">Face crop</text><text class="s" x="310" y="170">MediaPipe detector</text>
+    </g>
+    <g>
+      <rect class="box" x="552" y="84" width="200" height="112" rx="14"/><rect class="glow" x="552" y="84" width="200" height="112" rx="14" style="animation-delay:3.0s"/>
+      <text class="n" x="572" y="114">03</text><text class="t" x="572" y="146">Detector</text><text class="s" x="572" y="170">CLIP ViT-L/14 · DF40</text>
+    </g>
+    <g>
+      <rect class="box" x="814" y="84" width="200" height="112" rx="14"/><rect class="glow" x="814" y="84" width="200" height="112" rx="14" style="animation-delay:4.5s"/>
+      <text class="n" x="834" y="114">04</text><text class="t" x="834" y="146">Verdict</text><text class="s" x="834" y="170">score · confidence · risk</text>
+    </g>
+    <g>
+      <rect class="box" x="1076" y="84" width="176" height="112" rx="14"/><rect class="glow" x="1076" y="84" width="176" height="112" rx="14" style="animation-delay:6.0s"/>
+      <text class="n" x="1096" y="114">05</text><text class="t" x="1096" y="146">Evidence</text><text class="s" x="1096" y="170">Grad-CAM heatmap</text>
+    </g>
+
+    <text x="640" y="248" text-anchor="middle" class="s" fill="#8b95a7">The model loads once at server start-up and is reused for every request.</text>
+  </g>
+  <rect x="0.5" y="0.5" width="1279" height="279" rx="20" fill="none" stroke="#263049"/>
+</svg>

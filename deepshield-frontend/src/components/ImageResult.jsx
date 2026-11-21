@@ -22,14 +22,18 @@ export default function ImageResult({ result, filename }) {
             <span>Risk level</span>
             <RiskBadge level={result.risk_level} />
           </div>
-          <div className="metric-row">
-            <span>ViT branch score</span>
-            <span className="metric-value">{(result.model_breakdown.vit_score * 100).toFixed(1)}%</span>
-          </div>
-          <div className="metric-row">
-            <span>EfficientNet branch score</span>
-            <span className="metric-value">{(result.model_breakdown.efficientnet_score * 100).toFixed(1)}%</span>
-          </div>
+          {[
+            ['DF40 CLIP score', result.model_breakdown.df40_clip_score],
+            ['ViT branch score', result.model_breakdown.vit_score],
+            ['EfficientNet branch score', result.model_breakdown.efficientnet_score],
+          ]
+            .filter(([, score]) => score !== null && score !== undefined)
+            .map(([label, score]) => (
+              <div className="metric-row" key={label}>
+                <span>{label}</span>
+                <span className="metric-value">{(score * 100).toFixed(1)}%</span>
+              </div>
+            ))}
           <div className="metric-row">
             <span>Processing time</span>
             <span className="metric-value">{result.processing_time_sec.toFixed(2)}s</span>

@@ -1,13 +1,17 @@
 """
 DeepShield - FastAPI Application
-Run with: uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
-Docs auto-generated at: http://localhost:8000/docs
+Run from the project root (the folder that contains api/, detectors/, models/):
+    python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+Docs auto-generated at: http://127.0.0.1:8000/docs
+(Skip --reload: it restarts the server and reloads the big model on every file save.)
 """
 
 import sys
 import os
 import tempfile
 import shutil
+import threading
+import traceback
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -20,26 +24,28 @@ from detectors.video_detector import VideoDetector
 from api.utils import numpy_image_to_base64
 from api.schemas import ImageDetectionResponse, VideoDetectionResponse, ErrorResponse
 
-# Models are loaded ONCE at server startup, not per-request — this is why
-# ImageDetector/VideoDetector's __init__ prints "Loading models..." only once
-# in your server logs, not on every upload.
+# Models are loaded ONCE at server startup, not per-request.
 detectors = {}
+
+# Grad-CAM keeps hook state on the shared model, so run one analysis at a time.
+detect_lock = threading.Lock()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting DeepShield API — loading models...")
-    detectors["image"] = ImageDetector()
-    detectors["video"] = VideoDetector(max_frames=20)
-    print("DeepShield API ready.")
+    print("Starting DeepShield API - loading models (can take a minute on CPU)...")
+    image_detector = ImageDetector()
+    detectors["image"] = image_detector
+    # Share the same loaded model with the video detector instead of loading it twice.
+    detectors["video"] = VideoDetector(max_frames=20, image_detector=image_detector)
+    print(f"DeepShield API ready. mode={image_detector.mode}")
     yield
     detectors.clear()
 
 
 app = FastAPI(title="DeepShield API", version="0.1.0", lifespan=lifespan)
 
-# Allow your Streamlit/React frontend (running on a different port) to call this API.
-# Tighten allow_origins to your actual frontend URL before any public deployment.
+# Tighten allow_origins to your real frontend URL before any public deployment.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -50,47 +56,69 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "models_loaded": list(detectors.keys())}
+    image = detectors.get("image")
+    return {
+        "status": "ok",
+        "models_loaded": list(detectors.keys()),
+        "mode": getattr(image, "mode", None),
+    }
 
 
-@app.post("/detect/image", response_model=ImageDetectionResponse)
-async def detect_image(file: UploadFile = File(...)):
-    file_bytes = await file.read()
+# These are plain `def` (not `async def`) on purpose: inference is blocking CPU/GPU work,
+# and FastAPI runs `def` endpoints in a worker thread so /health stays responsive meanwhile.
+@app.post(
+    "/detect/image",
+    response_model=ImageDetectionResponse,
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+)
+def detect_image(file: UploadFile = File(...)):
+    file_bytes = file.file.read()
 
     try:
-        result = detectors["image"].detect(file_bytes, file.filename)
+        with detect_lock:
+            result = detectors["image"].detect(file_bytes, file.filename or "upload")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {type(e).__name__}: {e}")
 
-    if "heatmap_overlay" in result and result["heatmap_overlay"] is not None:
+    if result.get("heatmap_overlay") is not None:
         result["heatmap_overlay"] = numpy_image_to_base64(result["heatmap_overlay"])
 
     return result
 
 
-@app.post("/detect/video", response_model=VideoDetectionResponse)
-async def detect_video(file: UploadFile = File(...)):
-    # Video needs a real file path on disk (OpenCV's VideoCapture can't read
-    # from raw bytes directly), so we save the upload to a temp file first.
-    suffix = os.path.splitext(file.filename)[-1] or ".mp4"
+@app.post(
+    "/detect/video",
+    response_model=VideoDetectionResponse,
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+)
+def detect_video(file: UploadFile = File(...)):
+    # OpenCV can't read video from raw bytes, so save the upload to a temp file first.
+    suffix = os.path.splitext(file.filename or "")[-1] or ".mp4"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file.file, tmp)
         tmp_path = tmp.name
 
     try:
-        result = detectors["video"].detect(tmp_path)
+        with detect_lock:
+            result = detectors["video"].detect(tmp_path)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {type(e).__name__}: {e}")
     finally:
-        os.remove(tmp_path)  # always clean up, even if detection failed
+        os.remove(tmp_path)
 
-    result["most_suspicious_frame"]["heatmap_overlay"] = numpy_image_to_base64(
-        result["most_suspicious_frame"]["heatmap_overlay"]
-    )
+    frame = result["most_suspicious_frame"]
+    if frame.get("heatmap_overlay") is not None:
+        frame["heatmap_overlay"] = numpy_image_to_base64(frame["heatmap_overlay"])
 
     return result
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api.main:app", host="127.0.0.1", port=8000)

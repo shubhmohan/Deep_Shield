@@ -6,7 +6,7 @@ import ArchitectureFlow from './components/ArchitectureFlow'
 import { analyzeImage, analyzeVideo } from './api'
 
 const STATUS_MESSAGES = {
-  image: 'Extracting face and running ensemble\u2026',
+  image: 'Extracting face and running the detector\u2026',
   video: 'Sampling frames and checking temporal consistency\u2026',
 }
 
@@ -64,18 +64,18 @@ export default function App() {
         <div>
           <h1 className="hero-headline">Tell whether a face was made by a person or a model.</h1>
           <p className="hero-sub">
-            DeepShield runs two independent detection models on any image or video
-            you upload, then shows exactly which pixels convinced it — no black
-            box, just evidence.
+            DeepShield runs a deep-learning deepfake detector on any image or video
+            you upload, then shows which pixels influenced the verdict — evidence,
+            not just a score.
           </p>
           <div className="hero-facts">
             <div>
-              <div className="hero-fact-num mono">2</div>
-              <div className="hero-fact-label">Model architectures</div>
+              <div className="hero-fact-num mono">Face-first</div>
+              <div className="hero-fact-label">Crops the face before scoring</div>
             </div>
             <div>
-              <div className="hero-fact-num mono">&lt;3s</div>
-              <div className="hero-fact-label">Typical image scan</div>
+              <div className="hero-fact-num mono">Heatmap</div>
+              <div className="hero-fact-label">Shows where the model looked</div>
             </div>
             <div>
               <div className="hero-fact-num mono">100%</div>
